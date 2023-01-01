@@ -1,70 +1,292 @@
-# Getting Started with Create React App
+# React router v6
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+```javascript
+npm install react-router-dom@latest
+```
 
-## Available Scripts
+## Switch, route and link
 
-In the project directory, you can run:
+Before
 
-### `npm start`
+```javascript
+import {Route, Switch} from 'react-router-dom'
+import Products from './pages/Products'
+import Welcome from './pages/Welcome';
+import MainHeader from './components/MainHeader'
+import ProductDetail from './pages/ProductDetail';
+ 
+function App() {
+  return (
+    <div>
+    <MainHeader/>
+    <main>
+    <Switch>
+      <Route path="/welcome">
+        <Welcome/>
+      </Route>
+      <Route path="/products" exact>
+        <Products/>
+      </Route>
+      <Route path='/products/:productId'>
+        <ProductDetail/>
+      </Route>
+      </Switch>
+      </main>
+    </div>
+  );
+}
+ 
+export default App;
+ 
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+After 
 
-### `npm test`
+```javascript
+import {Route, Routes} from 'react-router-dom'
+import Products from './pages/Products'
+import Welcome from './pages/Welcome';
+import MainHeader from './components/MainHeader'
+import ProductDetail from './pages/ProductDetail';
+ 
+function App() {
+  return (
+    <div>
+    <MainHeader/>
+    <main>
+    <Routes>
+      <Route path="/welcome" element={<Welcome/>}/>
+      <Route path="/products" element={<Products/>}/>
+      <Route path='/products/:productId' element={<ProductDetail/>}/>
+      </Routes>
+      </main>
+    </div>
+  );
+}
+ 
+export default App;
+ 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+before
 
-### `npm run build`
+```javascript
+import {NavLink} from 'react-router-dom';
+import classes from './MainHeader.module.css'
+ 
+const MainHeader =() =>{
+    return (
+    <header className={classes.header}>
+        <nav>
+            <ul>
+                <li>
+                    <NavLink activeClassName={classes.active} to='/welcome'>Welcome</NavLink>
+                </li>
+                <li>
+                    <NavLink activeClassName={classes.active} to='/products'>Products</NavLink>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    )
+}
+ 
+export default MainHeader;
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+after
+```javascript
+import {NavLink} from 'react-router-dom';
+import classes from './MainHeader.module.css'
+ 
+const MainHeader =() =>{
+    return (
+    <header className={classes.header}>
+        <nav>
+            <ul>
+                <li>
+                    <NavLink className={(navData)=>navData.isActive ? classes.active : ''} to='/welcome'>Welcome</NavLink>
+                </li>
+                <li>
+                    <NavLink className={(navData)=>navData.isActive ? classes.active : ''} to='/products'>Products</NavLink>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    )
+}
+ 
+export default MainHeader;
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Redirect and nested routes
 
-### `npm run eject`
+before
+```javascript
+import { Route, Routes, Redirect } from 'react-router-dom';
+ 
+import Welcome from './pages/Welcome';
+import Products from './pages/Products';
+import ProductDetail from './pages/ProductDetail';
+import MainHeader from './components/MainHeader';
+ 
+function App() {
+  return (
+    <div>
+      <MainHeader />
+      <main>
+        <Routes>
+          <Route path='/' exact>
+            <Redirect to='/welcome' />
+          </Route>
+          <Route path="/welcome" element={<Welcome/>}/>
+      <Route path="/products" element={<Products/>}/>
+      <Route path='/products/:productId' element={<ProductDetail/>}/>
+ 
+        </Routes>
+      </main>
+    </div>
+  );
+}
+ 
+export default App;
+ 
+// our-domain.com/welcome => Welcome Component
+// our-domain.com/products => Products Component
+// our-domain.com/product-detail/a-book
+ 
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```
+after
+```javascript
+import { Route, Routes, Navigate } from 'react-router-dom';
+ 
+import Welcome from './pages/Welcome';
+import Products from './pages/Products';
+import ProductDetail from './pages/ProductDetail';
+import MainHeader from './components/MainHeader';
+ 
+function App() {
+  return (
+    <div>
+      <MainHeader />
+      <main>
+        <Routes>
+          <Route path='/' element={<Navigate  to='/welcome' />} />
+          <Route path="/welcome/*" element={<Welcome/>}/>
+      <Route path="/products" element={<Products/>}/>
+      <Route path='/products/:productId' element={<ProductDetail/>}/>
+        </Routes>
+      </main>
+    </div>
+  );
+}
+ 
+export default App;
+ 
+// our-domain.com/welcome => Welcome Component
+// our-domain.com/products => Products Component
+// our-domain.com/product-detail/a-book
+ 
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+before
+```javascript
+import { Route } from 'react-router-dom';
+ 
+const Welcome = () => {
+  return (
+    <section>
+      <h1>The Welcome Page</h1>
+      <Route path="/welcome/new-user">
+        <p>Welcome, new user!</p>
+      </Route>
+    </section>
+  );
+};
+ 
+export default Welcome;
+ 
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+after
+```javascript
+import { Route, Routes } from 'react-router-dom';
+ 
+const Welcome = () => {
+  return (
+    <section>
+      <h1>The Welcome Page</h1>
+      <Routes>
+      <Route path="new-user" element={ <p>Welcome, new user!</p>}>
+       
+      </Route>
+      </Routes>
+    </section>
+  );
+};
+ 
+export default Welcome;
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```
 
-## Learn More
+## alternative way to define nested routes directly in app , within the list of routes
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```javascript
+import { Route, Routes, Navigate } from 'react-router-dom';
+ 
+import Welcome from './pages/Welcome';
+import Products from './pages/Products';
+import ProductDetail from './pages/ProductDetail';
+import MainHeader from './components/MainHeader';
+ 
+function App() {
+  return (
+    <div>
+      <MainHeader />
+      <main>
+        <Routes>
+          <Route path='/' element={<Navigate  to='/welcome' />} />
+          <Route path="/welcome/*" element={<Welcome/>}>
+          <Route path="new-user" element={ <p>Welcome, new user!</p>}>
+       </Route>
+          </Route>
+      <Route path="/products" element={<Products/>}/>
+      <Route path='/products/:productId' element={<ProductDetail/>}/>
+        </Routes>
+      </main>
+    </div>
+  );
+}
+ 
+export default App;
+ 
+// our-domain.com/welcome => Welcome Component
+// our-domain.com/products => Products Component
+// our-domain.com/product-detail/a-book
+ 
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
 
-### Code Splitting
+```javascript
+import { Outlet } from 'react-router-dom';
+ 
+const Welcome = () => {
+  return (
+    <section>
+      <h1>The Welcome Page</h1>
+      <Outlet/>
+    </section>
+  );
+};
+ 
+export default Welcome;
+ 
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```
 
-### Analyzing the Bundle Size
+## useHistory replaced by useNavigate
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## <Prompt/> from react router 5 not available currently in v6
